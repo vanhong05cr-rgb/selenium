@@ -24,7 +24,7 @@ try:
     # ==========================================
     driver.get(url)
     
-    # Dùng WebDriverWait để đảm bảo list đã tải xong (từ Code I - rất tốt)
+    # Dùng WebDriverWait để đảm bảo list đã tải xong 
     anchors = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#mw-content-text .div-col li > a"))
     )
@@ -54,7 +54,7 @@ try:
         
         try:
             driver.get(link)
-            # Không cần sleep quá lâu nếu mạng tốt, 1s là đủ lịch sự
+            
             time.sleep(1) 
 
             # --- A. Lấy Tên ---

@@ -20,8 +20,6 @@ driver.get(url_goc)
 # ======================================================
 # BƯỚC 2: LẤY LINK TỪNG TRƯỜNG (GIAI ĐOẠN 1)
 # ======================================================
-# Các trường ĐH thường nằm trong bảng có class là 'wikitable'
-# Chúng ta lấy tất cả thẻ 'a' (link) nằm trong bảng đó
 try:
     # Chờ bảng hiện ra
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "wikitable")))
@@ -35,9 +33,7 @@ try:
         title = e.get_attribute("title")
         
         # LỌC LINK RÁC:
-        # 1. Phải có link
-        # 2. Link phải chứa "/wiki/"
-        # 3. Loại bỏ các link đỏ (trang chưa viết) thường chứa "redlink=1"
+        
         if link and "/wiki/" in link and "redlink=1" not in link:
             uni_links.append(link)
     
@@ -55,8 +51,8 @@ except Exception as e:
 count = 0
 # --- CHẠY THỬ NGHIỆM 5 TRƯỜNG (Xóa dòng if break để chạy hết) ---
 for link in uni_links:
-    if count >= 5: 
-        break
+    # if count >= 5: 
+    #     break
     count += 1
     
     print(f"[{count}] Đang cào: {link}")
@@ -73,12 +69,13 @@ for link in uni_links:
             name = "Null"
 
         # --- B. XỬ LÝ INFOBOX (KHUNG THÔNG TIN BÊN PHẢI) ---
-        # Đây là kỹ thuật quan trọng: Tìm theo từ khóa trong bảng
+       
         
         # Mặc định là Null (Trống)
         hieu_truong = "Null"
         dia_chi = "Null"
         so_dien_thoai = "Null"
+        website = "Null"
 
         try:
             # Tìm tất cả các dòng (tr) trong bảng thông tin (infobox)
@@ -88,7 +85,7 @@ for link in uni_links:
                 text_row = row.text # Lấy toàn bộ chữ trong dòng đó
                 
                 # 1. Tìm Hiệu trưởng (Có thể ghi là Hiệu trưởng, Giám đốc, Viện trưởng...)
-                # Logic: Nếu dòng đó có chữ "Hiệu trưởng" -> Lấy phần bên phải
+               
                 if "Hiệu trưởng" in text_row or "Giám đốc" in text_row:
                     # Cố gắng lấy thẻ td (cột giá trị)
                     try:
@@ -109,6 +106,14 @@ for link in uni_links:
                         so_dien_thoai = row.find_element(By.TAG_NAME, "td").text
                     except:
                         pass
+                # 3. TÌM WEBSITE
+                if "Website" in text_row or "trang web" in text_row or "url" in text_row:
+                    try:
+                        website = row.find_element(By.TAG_NAME, "td").text
+                    except:
+                        pass
+                # elif any(x in header for x in ["website", "trang web", "url"]):
+                #     info["Website"] = clean_text(content)
 
         except:
             # Nếu không có bảng infobox thì chịu, giữ nguyên Null
@@ -120,6 +125,7 @@ for link in uni_links:
             'Hiệu Trưởng': hieu_truong,
             'Địa Chỉ': dia_chi,
             'Điện Thoại': so_dien_thoai,
+            'Website': website
             #'Link Wiki': link
         }
         data_list.append(uni_info)
@@ -137,7 +143,7 @@ if data_list:
     # Thay thế chữ "Null" bằng giá trị rỗng thật của Excel (nếu muốn)
     # df.replace("Null", "", inplace=True)
     
-    file_name = 'DanhSachTruongDH.xlsx'
+    file_name = 'DanhSachTruongDHsua.xlsx'
     df.to_excel(file_name, index=False)
     print("\n------------------------------------------------")
     print(f"XONG! Đã lưu dữ liệu vào file '{file_name}'")
